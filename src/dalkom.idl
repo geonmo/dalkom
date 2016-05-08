@@ -1,0 +1,15 @@
+/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/*
+ * dalkom.idl
+ *
+ * This file is part of the Dalkom project.
+ *
+ * Copyright (C) 2016 Hodong Kim <cogniti@gmail.com>
+ */
+
+#include <com/sun/star/uno/XInterface.idl>
+#include <com/sun/star/lang/IllegalArgumentException.idl>
+
+module dalkom
+{
+};
