@@ -12,14 +12,16 @@ dalkom_uno_la_CPPFLAGS = \
 	-I/usr/include/libreoffice \
 	-fvisibility=hidden \
 	-DUNX -DGCC -DLINUX -DCPPU_ENV=gcc3 -DHAVE_GCC_VISIBILITY_FEATURE \
-	-I$(srcdir)/includes
+	-I$(srcdir)/includes \
+	$(LIBHWP_CFLAGS)
 
 dalkom_uno_la_LDFLAGS = \
 	-avoid-version -module \
 	-L$(OO_SDK_HOME)/lib \
 	-L$(OO_SDK_URE_HOME)/lib \
 	-Wl,-z,origin -Wl,-rpath,'$$ORIGIN' \
-	-luno_cppuhelpergcc3 -luno_cppu -luno_sal
+	-luno_cppuhelpergcc3 -luno_cppu -luno_sal \
+	$(LIBHWP_LIBS)
 
 includes:
 	mkdir -p includes

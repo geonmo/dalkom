@@ -15,6 +15,7 @@
 #include <com/sun/star/text/XTextDocument.hpp>
 #include <com/sun/star/text/XTextCursor.hpp>
 #include <com/sun/star/text/XTextRange.hpp>
+#include <hwp.h>
 
 #define SERVICE_NAME1 "dalkom.HwpImportFilter"
 #define SERVICE_NAME2 "dalkom.HwpExtendedTypeDetection"
@@ -33,6 +34,82 @@ using com::sun::star::uno::Exception;
 using com::sun::star::uno::RuntimeException;
 using com::sun::star::beans::PropertyValue;
 
+/* HwpToTxt class ***********************************************************/
+#define HWP_TYPE_TO_TXT             (hwp_to_txt_get_type ())
+#define HWP_TO_TXT(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), HWP_TYPE_TO_TXT, HwpToTxt))
+#define HWP_TO_TXT_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), HWP_TYPE_TO_TXT, HwpToTxtClass))
+#define HWP_IS_TO_TXT(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), HWP_TYPE_TO_TXT))
+#define HWP_IS_TO_TXT_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), HWP_TYPE_TO_TXT))
+#define HWP_TO_TXT_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), HWP_TYPE_TO_TXT, HwpToTxtClass))
+
+typedef struct _HwpToTxt      HwpToTxt;
+typedef struct _HwpToTxtClass HwpToTxtClass;
+
+struct _HwpToTxtClass
+{
+  GObjectClass parent_class;
+};
+
+struct _HwpToTxt
+{
+  GObject parent_instance;
+};
+
+GType hwp_to_txt_get_type (void) G_GNUC_CONST;
+
+static void hwp_to_txt_iface_init (HwpListenableInterface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (HwpToTxt, hwp_to_txt, G_TYPE_OBJECT,
+  G_IMPLEMENT_INTERFACE (HWP_TYPE_LISTENABLE, hwp_to_txt_iface_init))
+
+static void hwp_to_txt_init (HwpToTxt *hwp_to_txt)
+{
+}
+
+static void hwp_to_txt_finalize (GObject *object)
+{
+  G_OBJECT_CLASS (hwp_to_txt_parent_class)->finalize (object);
+}
+
+static void hwp_to_txt_class_init (HwpToTxtClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  object_class->finalize = hwp_to_txt_finalize;
+}
+
+HwpToTxt *hwp_to_txt_new ()
+{
+  return (HwpToTxt *) g_object_new (HWP_TYPE_TO_TXT, NULL);
+}
+
+typedef struct _Param
+{
+  Reference <XText> *xtext;
+  Reference <XTextRange> *xtext_range;
+} Param;
+
+void listen_paragraph (HwpListenable *listenable,
+                       HwpParagraph  *paragraph,
+                       gpointer       user_data,
+                       GError       **error)
+{
+  const gchar *text = hwp_paragraph_get_text (paragraph);
+
+  Param *param = (Param *) user_data;
+  gchar *str = g_strdup_printf (text, "\n", NULL);
+
+  OUString oustr = OStringToOUString(OString(str, strlen(str)),
+                                     RTL_TEXTENCODING_UTF8 );
+  (*(param->xtext))->insertString(*(param->xtext_range), oustr, false);
+
+  g_free (str);
+}
+
+static void hwp_to_txt_iface_init (HwpListenableInterface *iface)
+{
+  iface->paragraph = listen_paragraph;
+}
+
 sal_Bool SAL_CALL
 HwpImportFilter::filter( const Sequence< ::com::sun::star::beans::PropertyValue >& aDescriptor )
   throw (RuntimeException, std::exception)
@@ -41,7 +118,41 @@ HwpImportFilter::filter( const Sequence< ::com::sun::star::beans::PropertyValue 
   Reference <XText> xText = xTextDocument->getText();
   Reference <XTextCursor> xTextCursor = xText->createTextCursor();
   Reference <XTextRange> xTextRange (xTextCursor, UNO_QUERY);
-  xText->insertString(xTextRange, OUString::createFromAscii("Hello World"), false);
+
+  sal_Int32 nLength = aDescriptor.getLength();
+  const PropertyValue *pValue = aDescriptor.getConstArray();
+  OUString url;
+  OString  ostr;
+  GError  *error = NULL;
+
+  for ( sal_Int32 i = 0 ; i < nLength; i++)
+    if ( pValue[i].Name == "URL" )
+      pValue[i].Value >>= url;
+
+  ostr = rtl::OUStringToOString(url, RTL_TEXTENCODING_UTF8);
+  const char *uri = ostr.getStr();
+  HwpFile *hwpfile = hwp_file_new_for_uri (uri, &error);
+
+  if (error)
+  {
+    g_clear_error (&error);
+
+    return sal_False;
+  }
+
+  HwpToTxt *hwp2txt = hwp_to_txt_new ();
+
+  Param *param = g_slice_new (Param);
+  param->xtext = &xText;
+  param->xtext_range = &xTextRange;
+
+  HwpParser *parser = hwp_parser_new (HWP_LISTENABLE (hwp2txt), param);
+  hwp_parser_parse (parser, hwpfile, &error);
+
+  g_slice_free (Param, param);
+  g_object_unref (parser);
+  g_object_unref (hwp2txt);
+  g_object_unref (hwpfile);
 
   return sal_True;
 }
