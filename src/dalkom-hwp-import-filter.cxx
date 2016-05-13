@@ -15,6 +15,7 @@
 #include <com/sun/star/text/XTextDocument.hpp>
 #include <com/sun/star/text/XTextCursor.hpp>
 #include <com/sun/star/text/XTextRange.hpp>
+#include <com/sun/star/text/ControlCharacter.hpp>
 #include <hwp.h>
 
 #define SERVICE_NAME1 "dalkom.HwpImportFilter"
@@ -96,13 +97,19 @@ void listen_paragraph (HwpListenable *listenable,
   const gchar *text = hwp_paragraph_get_text (paragraph);
 
   Param *param = (Param *) user_data;
-  gchar *str = g_strdup_printf (text, "\n", NULL);
 
-  OUString oustr = OStringToOUString(OString(str, strlen(str)),
-                                     RTL_TEXTENCODING_UTF8 );
-  (*(param->xtext))->insertString(*(param->xtext_range), oustr, false);
-
-  g_free (str);
+  if (g_strcmp0 (text, "") != 0)
+  {
+    OUString oustr = OStringToOUString(OString(text, strlen(text)),
+                                       RTL_TEXTENCODING_UTF8 );
+    (*(param->xtext))->insertString(*(param->xtext_range), oustr, false);
+  }
+  else
+  {
+    (*(param->xtext))->insertControlCharacter(*(param->xtext_range),
+                                              com::sun::star::text::ControlCharacter::PARAGRAPH_BREAK,
+                                              false);
+  }
 }
 
 static void hwp_to_txt_iface_init (HwpListenableInterface *iface)
