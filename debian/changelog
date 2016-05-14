@@ -1,1 +1,6 @@
+dalkom (2016.05.15) stable; urgency=medium
 
+  * Initial Release
+  * Dalkom is a LibreOffice extension to import Hwp Documents.
+
+ -- Hodong Kim <cogniti@gmail.com>  Sun, 15 May 2016 03:39:22 +0900

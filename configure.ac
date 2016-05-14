@@ -1,4 +1,4 @@
-AC_INIT(dalkom, 0.1)
+AC_INIT(dalkom, 2016.05.15)
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
