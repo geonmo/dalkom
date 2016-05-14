@@ -1,4 +1,5 @@
-lib_LTLIBRARIES = dalkom.uno.la
+extensiondir = /usr/lib/libreoffice/share/extensions/dalkom
+extension_LTLIBRARIES = dalkom.uno.la
 
 BUILT_SOURCES = includes
 
@@ -28,12 +29,17 @@ includes:
 	$(AM_V_GEN) $(IDLC) -I$(OO_SDK_HOME)/idl dalkom.idl
 	$(AM_V_GEN) $(REGMERGE) $(srcdir)/dalkom.uno.rdb /UCR $(srcdir)/dalkom.urd
 	$(AM_V_GEN) $(CPPUMAKER) -Gc -O$(srcdir)/includes \
-		$(OO_SDK_URE_HOME)/share/misc/types.rdb \
-		$(OFFICE_HOME)/program/types/offapi.rdb
+		$(TYPES_RDB) $(OFFICE_HOME)/program/types/offapi.rdb
 	$(AM_V_GEN) $(CPPUMAKER) -Gc \
 		-O$(srcdir)/includes $(srcdir)/dalkom.uno.rdb \
-		-X$(OO_SDK_URE_HOME)/share/misc/types.rdb \
-		-X$(OFFICE_HOME)/program/types/offapi.rdb
+		-X$(TYPES_RDB) -X$(OFFICE_HOME)/program/types/offapi.rdb
+
+install-data-hook:
+	rm -f $(DESTDIR)$(extensiondir)/dalkom.uno.la
+
+uninstall-hook:
+	 rm    -f $(DESTDIR)$(extensiondir)/dalkom.uno.so
+	-rmdir -p $(DESTDIR)$(extensiondir)
 
 clean-local:
 	-rm -rf includes

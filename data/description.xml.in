@@ -4,14 +4,15 @@
     xmlns="http://openoffice.org/extensions/description/2006"
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:dep="http://openoffice.org/extensions/description/2006">
-    <identifier value="dalkom-linux_x86_64" />
+    <identifier value="@PACKAGE@" />
 
-    <version value="0.1" />
+    <version value="@VERSION@" />
 
-    <platform value="linux_x86_64" />
+    <platform value="@UNOPKG_PLATFORM@" />
 
     <display-name>
         <name lang="en-US">Dalkom</name>
+        <name lang="ko-KR">달콤</name>
     </display-name>
 
 </description>
