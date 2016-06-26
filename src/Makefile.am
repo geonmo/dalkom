@@ -26,13 +26,8 @@ dalkom_uno_la_LDFLAGS = \
 
 includes:
 	mkdir -p includes
-	$(AM_V_GEN) $(IDLC) -I$(OO_SDK_HOME)/idl dalkom.idl
-	$(AM_V_GEN) $(REGMERGE) $(srcdir)/dalkom.uno.rdb /UCR $(srcdir)/dalkom.urd
 	$(AM_V_GEN) $(CPPUMAKER) -Gc -O$(srcdir)/includes \
 		$(TYPES_RDB) $(OFFICE_HOME)/program/types/offapi.rdb
-	$(AM_V_GEN) $(CPPUMAKER) -Gc \
-		-O$(srcdir)/includes $(srcdir)/dalkom.uno.rdb \
-		-X$(TYPES_RDB) -X$(OFFICE_HOME)/program/types/offapi.rdb
 
 install-data-hook:
 	rm -f $(DESTDIR)$(extensiondir)/dalkom.uno.la
