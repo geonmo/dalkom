@@ -1,4 +1,4 @@
-extensiondir = /usr/lib/libreoffice/share/extensions/dalkom
+extensiondir = $(OFFICE_HOME)/share/extensions/dalkom
 extension_DATA = \
 	description.xml \
 	filters.xcu \

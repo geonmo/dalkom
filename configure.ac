@@ -28,13 +28,23 @@ dnl ***************************************************************************
 dnl OO SDK environment
 dnl ***************************************************************************
 
-OFFICE_HOME=/usr/lib/libreoffice
+AS_IF([test -d "/usr/lib/libreoffice"],
+      [OFFICE_HOME=/usr/lib/libreoffice],
+      [test -d "/usr/lib64/libreoffice"],
+      [OFFICE_HOME=/usr/lib64/libreoffice],
+      [AC_MSG_ERROR([libreoffice not found, please install libreoffice and sdk])])
+
 OO_SDK_HOME=$OFFICE_HOME/sdk
 OO_SDK_URE_HOME=/usr/lib/ure
 
+AS_IF([test -d "/usr/include/libreoffice"],
+      [OFFICE_INC_DIR=/usr/include/libreoffice],
+      [test -d "$OO_SDK_HOME/include"],
+      [OFFICE_INC_DIR=$OO_SDK_HOME/include],
+      [AC_MSG_ERROR([libreoffice not found, please install libreoffice and sdk])])
+
 AC_PATH_PROG(CPPUMAKER, cppumaker, [no], $OO_SDK_HOME/bin)
 AC_PATH_PROG(IDLC,      idlc,      [no], $OO_SDK_HOME/bin)
-AC_PATH_PROG(REGMERGE,  regmerge,  [no], [$OO_SDK_URE_HOME/bin:$OFFICE_HOME/program])
 
 AC_CHECK_FILE([$OO_SDK_URE_HOME/share/misc/types.rdb],
               [TYPES_RDB=$OO_SDK_URE_HOME/share/misc/types.rdb], [TYPES_RDB="no"])
@@ -49,10 +59,6 @@ if test "x$CPPUMAKER" = "xno"; then
   AC_MSG_ERROR([cppumaker not found, please install libreoffice-dev])
 fi
 
-if test "x$REGMERGE" = "xno"; then
-  AC_MSG_ERROR([regmerge not found, please install an ure package])
-fi
-
 UNOPKG_PLATFORM=linux_`uname -m`
 
 AC_SUBST(OFFICE_HOME)
@@ -60,6 +66,7 @@ AC_SUBST(OO_SDK_HOME)
 AC_SUBST(OO_SDK_URE_HOME)
 AC_SUBST(UNOPKG_PLATFORM)
 AC_SUBST(TYPES_RDB)
+AC_SUBST(OFFICE_INC_DIR)
 
 dnl ***************************************************************************
 dnl Check libhwp

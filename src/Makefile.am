@@ -1,4 +1,4 @@
-extensiondir = /usr/lib/libreoffice/share/extensions/dalkom
+extensiondir = $(OFFICE_HOME)/share/extensions/dalkom
 extension_LTLIBRARIES = dalkom.uno.la
 
 BUILT_SOURCES = includes
@@ -10,7 +10,7 @@ dalkom_uno_la_SOURCES = \
 
 dalkom_uno_la_CPPFLAGS = \
 	-Wall -Werror \
-	-I/usr/include/libreoffice \
+	-I$(OFFICE_INC_DIR) \
 	-fvisibility=hidden \
 	-DUNX -DGCC -DLINUX -DCPPU_ENV=gcc3 -DHAVE_GCC_VISIBILITY_FEATURE \
 	-I$(srcdir)/includes \
